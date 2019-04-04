@@ -5,3 +5,8 @@ Se desea implementar un sistema de gestión para un cine que permita la compra d
  - Además habrá otro hilo encargado de reponer los recursos de las taquillas de comida cuando se acaben.
 
 Se deberá llevar a cabo la gestión de la concurrencia de los hilos así como un sistema de prioridades para los mismos.
+
+## Versiones
+### Versión 0.5
+ - Código empezado en versión secuencial:
+   - Métodos para comprobar sala y hacer reservas listos.
