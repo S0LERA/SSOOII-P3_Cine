@@ -10,3 +10,6 @@ Se deberá llevar a cabo la gestión de la concurrencia de los hilos así como u
 ### Versión 0.5
  - Código empezado en versión secuencial:
    - Métodos para comprobar sala y hacer reservas listos.
+  
+### Versión 0.8
+ - Código aactualizado para seguir el patrón cliente-servidor.
