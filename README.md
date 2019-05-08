@@ -17,3 +17,9 @@ Se deberá llevar a cabo la gestión de la concurrencia de los hilos así como u
 ### Versión 0.9
  - Funciones de la sala separadas.
  - Creada estructura y método para el cliente.
+
+### Versión 1.0
+ - Primera versión con toda la funcionalidad.
+ - Falta:
+   - Implementar turnos.
+   - Más puntos de venta.
