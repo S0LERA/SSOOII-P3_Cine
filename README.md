@@ -29,3 +29,7 @@ Se deberá llevar a cabo la gestión de la concurrencia de los hilos así como u
  - Turnos implementados.
  - Falta:
    - Más puntos de venta.
+
+### Versión 1.8
+ - Puntos de venta terminados.
+ - Añadido Makefile.

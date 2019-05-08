@@ -19,23 +19,23 @@ std::mutex sem_pago;
 std::mutex sem_taquilla;
 std::mutex sem_comida;
 std::mutex sem_reponer;
-std::mutex sem_aux2;
-std::mutex sem_aux3;
-std::mutex sem_aux4;
+std::mutex sem_cola_pagos;
+std::mutex sem_cola_reposiciones;
 std::mutex sem_turnos_entradas;
 std::mutex sem_turnos_taquilla;
 std::mutex sem_turnos_comida;
 std::mutex sem_turnos_puntov;
 std::condition_variable cv_turno_entradas;
 std::condition_variable cv_turno_comida;
+std::condition_variable cv_puntos_venta;
 int turno_entradas = 0;
 int turno_comida = 0;
 
 void solicitarReposicion(punto_venta pv)
 {
-    sem_aux4.lock();
+    sem_cola_reposiciones.lock();
     v_reposiciones.insert(v_reposiciones.begin(), pv);
-    sem_aux4.unlock();
+    sem_cola_reposiciones.unlock();
     sem_reponer.unlock();
 }
 
@@ -57,9 +57,9 @@ void solicitarPago(cliente c, std::string tipo)
     pago p;
     p.id_cliente = c.id_cliente;
     p.tipo_pago = tipo;
-    sem_aux2.lock();
+    sem_cola_pagos.lock();
     v_pagos.insert(v_pagos.begin(), p);
-    sem_aux2.unlock();
+    sem_cola_pagos.unlock();
     sem_pago.unlock();
 }
 
@@ -69,19 +69,19 @@ void solicitarComida(cliente c)
     std::unique_lock<std::mutex> lk_sem_turnos_puntov(sem_turnos_puntov);
     cv_turno_comida.wait(lk_sem_turnos_puntov,[id]{return(turno_comida == id);});
     comida cm = {c.id_cliente, c.palomitas, c.bebidas};
-    sem_aux3.lock();
     v_comida.insert(v_comida.begin(), cm);
-    sem_aux3.unlock();
     sem_comida.unlock();
+    cv_puntos_venta.notify_one();
     sem_turnos_puntov.lock();
 }
+
 
 void taquillaEntradas()
 {
     while (1)
     {
         sem_taquilla.lock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         int reserva_inicial = -1;
 
         solicitud s = v_solicitudes.front();
@@ -93,6 +93,7 @@ void taquillaEntradas()
         if (reserva_inicial == -1)
         {
             std::cout << "No hay suficientes asientos juntos disponibles en la sala." << '\n';
+            sem_turnos_taquilla.unlock();
         }
         else
         {
@@ -113,7 +114,7 @@ void sistemaPago()
         sem_pago.lock();
         pago p = v_pagos.front();
         v_pagos.erase(v_pagos.begin());
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         if (p.tipo_pago == "entradas")
         {
@@ -133,7 +134,8 @@ void puntoVenta(int id, int palomitas, int bebidas)
     punto_venta pv = {id, palomitas, bebidas};
     while (1)
     {
-        sem_comida.lock();
+        std::unique_lock<std::mutex> lk_sem_comida(sem_comida);
+        cv_puntos_venta.wait(lk_sem_comida,[]{return !v_comida.empty();});
         comida cm = v_comida.front();
         v_comida.erase(v_comida.begin());
 
@@ -175,7 +177,7 @@ void reponedor()
 
 void secuenciaCliente(int id)
 {
-    cliente c = {id, (rand() % 6) + 1, (rand() % 3) + 1, (rand() % 2) + 1};
+    cliente c = {id, (rand() % 6) + 1, (rand() % 5) + 1, (rand() % 4) + 1};
     solicitarEntradas(c);
     solicitarPago(c, "entradas");
     solicitarComida(c);
@@ -193,6 +195,12 @@ void creaHilos(int numero_hilos)
 
 int main(int argc, char const *argv[])
 {
+
+    if(argc > 1){
+        std::cout << "Número de argumentos inválido, cerrando el programa..." << '\n';
+        return EXIT_FAILURE;
+    }
+
     int n_hilos = 10;
     vaciarSala();
     sem_taquilla.lock();
@@ -203,12 +211,13 @@ int main(int argc, char const *argv[])
 
     sem_comida.lock();
     std::thread punto_venta_1(puntoVenta,1 , 5, 5);
+    std::thread punto_venta_2(puntoVenta,2 , 5, 5);
+    std::thread punto_venta_3(puntoVenta,3 , 5, 5);
 
     sem_reponer.lock();
     std::thread reponedor_comida(reponedor);
 
     creaHilos(n_hilos);
-    //mostrarEstadoSala();
 
     sem_turnos_entradas.lock();
     for(int i = 0; i<n_hilos;i++){
@@ -223,7 +232,7 @@ int main(int argc, char const *argv[])
         cv_turno_comida.notify_all();
         sem_turnos_comida.lock();
     }
-
+        mostrarEstadoSala();
     reponedor_comida.join();
 
     return 0;
