@@ -23,3 +23,9 @@ Se deberá llevar a cabo la gestión de la concurrencia de los hilos así como u
  - Falta:
    - Implementar turnos.
    - Más puntos de venta.
+
+### Versión 1.5
+ - Reparada la versión 1.0.
+ - Turnos implementados.
+ - Falta:
+   - Más puntos de venta.

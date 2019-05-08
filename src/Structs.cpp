@@ -12,6 +12,7 @@ struct comida{
     int bebidas;
 };
 struct punto_venta{
+    int id;
     int palomitas;
     int bebidas;
 };
