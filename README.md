@@ -13,3 +13,7 @@ Se deberá llevar a cabo la gestión de la concurrencia de los hilos así como u
   
 ### Versión 0.8
  - Código aactualizado para seguir el patrón cliente-servidor.
+
+### Versión 0.9
+ - Funciones de la sala separadas.
+ - Creada estructura y método para el cliente.
