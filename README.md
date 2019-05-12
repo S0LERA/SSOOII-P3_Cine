@@ -33,3 +33,7 @@ Se deberá llevar a cabo la gestión de la concurrencia de los hilos así como u
 ### Versión 1.8
  - Puntos de venta terminados.
  - Añadido Makefile.
+
+### Versión 2.0
+ - Añadida aleatoriedad al atender las colas.
+ - Falta controlar que se vayan del cine si no hay entradas.
